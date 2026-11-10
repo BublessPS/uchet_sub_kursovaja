@@ -1,12 +1,7 @@
 import { useMemo, useState } from "react";
+import { useMoney } from "./CurrencyProvider";
 import { EmptyState, Icon, ServiceIcon, SubscriptionCard } from "./components";
-import {
-  CATEGORIES,
-  dueLabel,
-  money,
-  shortDate,
-  type Subscription,
-} from "./domain";
+import { CATEGORIES, dueLabel, shortDate, type Subscription } from "./domain";
 
 export default function SubscriptionList({
   subscriptions,
@@ -28,6 +23,7 @@ export default function SubscriptionList({
   onViewAll: () => void;
 }) {
   const [status, setStatus] = useState("all");
+  const money = useMoney();
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("all");
   const [sort, setSort] = useState("date");

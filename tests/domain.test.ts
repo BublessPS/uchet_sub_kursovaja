@@ -26,7 +26,7 @@ test("monthly and annual prices have a consistent monthly equivalent", () => {
     (sum, sub) => sum + monthlyCost(sub),
     0,
   );
-  assert.equal(Math.round(total * 100), 199517);
+  assert.equal(Math.round(total * 100), 597417);
   assert.equal(
     monthlyCost({ ...data.subscriptions[0], amount: 12000, cycle: "yearly" }),
     1000,
@@ -205,4 +205,21 @@ test("legacy sample upgrade preserves custom subscriptions, dates, pauses and pa
   assert.equal(updated.payments, data.payments);
   assert.equal(upgradeDemoSubscriptions(updated), updated);
   assert.equal(validateData(updated), updated);
+});
+
+test("new demo services are added once to the old sample portfolio, never to a cleared one", () => {
+  const old = createDemoData(today);
+  delete old.demoCatalogVersion;
+  old.subscriptions = old.subscriptions.slice(0, 6);
+  const updated = upgradeDemoSubscriptions(old);
+  assert.equal(updated.subscriptions.length, 10);
+  assert.ok(updated.subscriptions.some((sub) => sub.name === "Discord Nitro"));
+  assert.ok(updated.subscriptions.some((sub) => sub.name === "ChatGPT Plus"));
+  updated.subscriptions = updated.subscriptions.filter(
+    (sub) => sub.name !== "Discord Nitro",
+  );
+  assert.equal(upgradeDemoSubscriptions(updated).subscriptions.length, 9);
+  const cleared = { ...old, subscriptions: [] };
+  assert.equal(upgradeDemoSubscriptions(cleared).subscriptions.length, 0);
+  assert.equal(old.subscriptions.length, 6);
 });

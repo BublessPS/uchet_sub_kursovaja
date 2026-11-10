@@ -39,6 +39,7 @@ export interface Settings {
 }
 export interface AppData {
   version: 1;
+  demoCatalogVersion?: number;
   subscriptions: Subscription[];
   payments: Payment[];
   settings: Settings;
@@ -240,9 +241,55 @@ export function createDemoData(today = new Date()): AppData {
       priceType: "official",
       note: "Подписка Иви: 399 ₽ в месяц по официальной справке. Пробные периоды, дополнительные пакеты и персональные предложения не учитываются. Источник проверен 06.11.2026.",
     },
+    {
+      name: "Discord Nitro",
+      category: "other",
+      amount: 999,
+      cycle: "monthly",
+      offset: 3,
+      status: "active",
+      sourceUrl:
+        "https://support.discord.com/hc/en-us/articles/4708041338391-Update-on-Premium-Services-in-Russia",
+      priceType: "demo",
+      note: "999 ₽ — пример суммы для учета, не официальный рублевый тариф. Discord сообщает об ограничениях на покупку платных услуг в России и с российскими платежными средствами. Укажите свою фактическую стоимость; это приложение не продает подписки.",
+    },
+    {
+      name: "ChatGPT Plus",
+      category: "productivity",
+      amount: 1990,
+      cycle: "monthly",
+      offset: 6,
+      status: "active",
+      sourceUrl: "https://learn.chatgpt.com/docs/pricing",
+      priceType: "demo",
+      note: "1 990 ₽ — пример суммы для учета, не официальный рублевый тариф и не автоматическая конвертация. Проверьте доступность и фактическую стоимость в своем аккаунте ChatGPT. Ссылка ведет к официальной документации о тарифах.",
+    },
+    {
+      name: "GitHub Copilot Pro",
+      category: "productivity",
+      amount: 990,
+      cycle: "monthly",
+      offset: 12,
+      status: "active",
+      sourceUrl: "https://github.com/features/copilot/plans",
+      priceType: "demo",
+      note: "990 ₽ — пример суммы для учета. На официальной странице тарифы указаны в иностранной валюте; рублевая сумма зависит от способа оплаты. Введите фактический расход из своего аккаунта.",
+    },
+    {
+      name: "Notion Plus",
+      category: "productivity",
+      amount: 1190,
+      cycle: "monthly",
+      offset: 25,
+      status: "paused",
+      sourceUrl: "https://www.notion.com/pricing",
+      priceType: "demo",
+      note: "1 190 ₽ — пример суммы для учета, не официальный рублевый тариф. У Notion стоимость зависит от числа участников, периода оплаты и региона. Уточните цену и доступность в своем аккаунте.",
+    },
   ];
   return {
     version: 1,
+    demoCatalogVersion: 2,
     subscriptions: entries.map(({ offset, ...entry }, i) => {
       const next = addDays(today, offset);
       return {
@@ -298,6 +345,27 @@ export function upgradeDemoSubscriptions(data: AppData): AppData {
       note: current.note,
     };
   });
+  // Upgrade the original sample portfolio once. Never repopulate a cleared
+  // portfolio or re-add sample services after the user has removed them.
+  if ((data.demoCatalogVersion ?? 1) < 2) {
+    const hasOriginalSamples = Array.from(
+      { length: 6 },
+      (_, i) => `demo-${i}`,
+    ).every((id) => subscriptions.some((sub) => sub.id === id));
+    if (hasOriginalSamples) {
+      for (const sample of replacement.slice(6)) {
+        if (
+          !subscriptions.some(
+            (sub) =>
+              sub.id === sample.id ||
+              sub.name.toLowerCase() === sample.name.toLowerCase(),
+          )
+        )
+          subscriptions.push(sample);
+      }
+    }
+    return { ...data, demoCatalogVersion: 2, subscriptions };
+  }
   return changed ? { ...data, subscriptions } : data;
 }
 function isRecord(value: unknown): value is Record<string, unknown> {

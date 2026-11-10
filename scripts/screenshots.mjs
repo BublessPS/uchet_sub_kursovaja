@@ -35,6 +35,28 @@ try {
       animations: "disabled",
     });
   }
+  await page
+    .locator(".sidebar")
+    .getByRole("button", { name: "Обзор", exact: true })
+    .click();
+  await page.getByRole("button", { name: "Сменить фон", exact: true }).click();
+  await page.screenshot({
+    path: "docs/screenshots/appearance.png",
+    fullPage: false,
+    animations: "disabled",
+  });
+  await page.getByRole("button", { name: "Красиво, оставить" }).click();
+  await page.waitForFunction(() => {
+    const option = document.querySelector('option[value="USD"]');
+    return option && !option.disabled;
+  });
+  await page.getByLabel("Валюта отображения").selectOption("USD");
+  await page.getByRole("heading", { level: 1 }).click();
+  await page.screenshot({
+    path: "docs/screenshots/usd.png",
+    fullPage: true,
+    animations: "disabled",
+  });
   const mobile = await browser.newPage({
     viewport: { width: 390, height: 844 },
     deviceScaleFactor: 1,
@@ -48,7 +70,7 @@ try {
     fullPage: true,
     animations: "disabled",
   });
-  console.log("Saved four screenshots in docs/screenshots.");
+  console.log("Saved six screenshots in docs/screenshots.");
 } finally {
   await browser.close();
 }

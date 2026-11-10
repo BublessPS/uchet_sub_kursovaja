@@ -11,6 +11,7 @@ export default function SettingsView({
   onImport,
   onReset,
   onClear,
+  onAppearance,
 }: {
   data: AppData;
   onSave: (settings: Settings) => void;
@@ -20,6 +21,7 @@ export default function SettingsView({
   onImport: (file: File) => void;
   onReset: () => void;
   onClear: () => void;
+  onAppearance: () => void;
 }) {
   const [budget, setBudget] = useState(String(data.settings.budget));
   const [reminder, setReminder] = useState(data.settings.reminderDays);
@@ -42,6 +44,28 @@ export default function SettingsView({
   return (
     <div className="settings-layout">
       <div className="settings-main">
+        <section className="panel settings-panel appearance-settings-summary">
+          <div className="panel-heading">
+            <div>
+              <h3>Оформление пространства</h3>
+              <p>Пейзажи за стеклом, свои изображения и градиенты.</p>
+            </div>
+            <span className="stat-symbol violet">
+              <Icon name="palette" />
+            </span>
+          </div>
+          <div className="appearance-summary-row">
+            <div className="appearance-miniatures">
+              <span />
+              <span />
+              <span />
+            </div>
+            <button className="button secondary" onClick={onAppearance}>
+              <Icon name="image" size={16} />
+              Настроить фон
+            </button>
+          </div>
+        </section>
         <section className="panel settings-panel">
           <div className="panel-heading">
             <div>

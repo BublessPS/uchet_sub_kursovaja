@@ -1,4 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
+import AppearancePicker from "./AppearancePicker";
+import { wallpaperImage } from "./appearance";
+import { useAppearance } from "./useAppearance";
+import { useMoney } from "./CurrencyProvider";
+import { CurrencySelect, CurrencyStatus } from "./CurrencyControls";
 import { CategoryBreakdown } from "./AnalyticsView";
 import AnalyticsView from "./AnalyticsView";
 import CalendarView, { MiniCalendar } from "./CalendarView";
@@ -21,7 +26,6 @@ import {
   dateKey,
   daysUntil,
   dueLabel,
-  money,
   monthlyCost,
   nextDate,
   recordPayment,
@@ -73,7 +77,10 @@ function download(content: string, filename: string, type: string) {
 }
 
 export default function App() {
+  const money = useMoney();
   const { data, setData, storageError } = useAppData();
+  const { appearance, setAppearance, appearanceError } = useAppearance();
+  const [showAppearance, setShowAppearance] = useState(false);
   const [view, setView] = useState<View>("overview");
   const [today, setToday] = useState(new Date());
   const [editing, setEditing] = useState<Subscription | "new" | null>(null);
@@ -82,6 +89,9 @@ export default function App() {
   const [confirmation, setConfirmation] = useState<Confirmation | null>(null);
   const [showReminders, setShowReminders] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
+  useEffect(() => {
+    if (appearanceError) setToast(appearanceError);
+  }, [appearanceError]);
   const active = activeSubscriptions(data);
   const monthly = active.reduce((total, sub) => total + monthlyCost(sub), 0);
   const upcoming = [...active].sort((a, b) =>
@@ -327,7 +337,17 @@ export default function App() {
   );
 
   return (
-    <div className="app-shell">
+    <div
+      className="app-shell glass-theme"
+      style={
+        {
+          "--wallpaper-image": wallpaperImage(appearance),
+          "--wallpaper-dim": appearance.dim / 100,
+          "--wallpaper-blur": `${appearance.blur}px`,
+        } as CSSProperties
+      }
+    >
+      <div className="app-wallpaper" aria-hidden="true" />
       {mobileMenu && (
         <button
           className="sidebar-backdrop"
@@ -419,6 +439,16 @@ export default function App() {
             <span>{currentViewName}</span>
           </div>
           <div className="topbar-right">
+            <CurrencySelect />
+            <button
+              className="wallpaper-button"
+              aria-label="Сменить фон"
+              title="Сменить фон"
+              onClick={() => setShowAppearance(true)}
+            >
+              <Icon name="image" size={17} />
+              <span>Сменить фон</span>
+            </button>
             <span className={`saved-status ${storageError ? "has-error" : ""}`}>
               <span className="online-dot" />
               {storageError ? "Не сохранено" : "Данные сохранены"}
@@ -466,6 +496,7 @@ export default function App() {
               </button>
             )}
           </div>
+          <CurrencyStatus />
           {storageError && (
             <div className="storage-error" role="alert">
               <Icon name="alert" size={20} />
@@ -481,14 +512,14 @@ export default function App() {
                 <Icon name="sparkles" size={17} />
               </span>
               <p>
-                <strong>Ваши сервисы — в рублях</strong>
+                <strong>Знакомые сервисы — в одном месте</strong>
                 <span>
                   {" "}
                   · Подписок с примерной ценой: {demoCount}. Источники и условия
                   доступны в карточках.
                 </span>
               </p>
-              <span className="demo-label">Все суммы в ₽</span>
+              <span className="demo-label">Цены для учета</span>
             </div>
           )}
           {view === "overview" && (
@@ -712,6 +743,7 @@ export default function App() {
               onImport={importJson}
               onReset={() => replaceData("demo")}
               onClear={() => replaceData("clear")}
+              onAppearance={() => setShowAppearance(true)}
             />
           )}
           <footer className="page-footer">
@@ -730,6 +762,14 @@ export default function App() {
           onClose={() => setEditing(null)}
           onSave={saveSubscription}
           onDelete={deleteSubscription}
+        />
+      )}
+      {showAppearance && (
+        <AppearancePicker
+          appearance={appearance}
+          error={appearanceError}
+          onChange={setAppearance}
+          onClose={() => setShowAppearance(false)}
         />
       )}
       {confirmation && (

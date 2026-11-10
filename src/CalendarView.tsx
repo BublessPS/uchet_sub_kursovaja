@@ -1,9 +1,9 @@
 import { useMemo, useState } from "react";
+import { useMoney } from "./CurrencyProvider";
 import { EmptyState, Icon, UpcomingItem } from "./components";
 import {
   addDays,
   dateKey,
-  money,
   monthName,
   monthStart,
   occurrences,
@@ -80,6 +80,7 @@ export default function CalendarView({
   onEdit: (sub: Subscription) => void;
   onExport: () => void;
 }) {
+  const money = useMoney();
   const [month, setMonth] = useState(monthStart(today));
   const [selected, setSelected] = useState(dateKey(today));
   const first = monthStart(month),

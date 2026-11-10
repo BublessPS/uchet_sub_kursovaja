@@ -3,7 +3,6 @@ import {
   activeSubscriptions,
   addDays,
   dateKey,
-  money,
   monthStart,
   monthlyCost,
   occurrences,
@@ -11,6 +10,7 @@ import {
   type AppData,
 } from "./domain";
 import { EmptyState, Icon, ServiceIcon } from "./components";
+import { useMoney } from "./CurrencyProvider";
 
 export function CategoryBreakdown({
   data,
@@ -19,6 +19,7 @@ export function CategoryBreakdown({
   data: AppData;
   compact?: boolean;
 }) {
+  const money = useMoney();
   const active = activeSubscriptions(data);
   const total = active.reduce((sum, s) => sum + monthlyCost(s), 0);
   const categories = Object.entries(CATEGORIES)
@@ -88,6 +89,7 @@ export default function AnalyticsView({
   today: Date;
   onExport: () => void;
 }) {
+  const money = useMoney();
   const active = activeSubscriptions(data);
   const monthly = active.reduce((sum, sub) => sum + monthlyCost(sub), 0);
   const months = Array.from({ length: 6 }, (_, i) => {

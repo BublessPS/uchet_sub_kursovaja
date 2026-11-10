@@ -1,4 +1,5 @@
 import { useEffect, useRef, type ReactNode } from "react";
+import { useMoney } from "./CurrencyProvider";
 import {
   ArrowDownLeft,
   ArrowDownToLine,
@@ -47,11 +48,15 @@ import {
   CircleAlert,
   Briefcase,
   PenTool,
+  Image,
+  Palette,
+  Gamepad2,
+  Aperture,
+  SquareTerminal,
 } from "lucide-react";
 import {
   CATEGORIES,
   dueLabel,
-  money,
   shortDate,
   daysUntil,
   type Subscription,
@@ -106,6 +111,11 @@ const icons = {
   export: ArrowDownToLine,
   briefcase: Briefcase,
   pen: PenTool,
+  image: Image,
+  palette: Palette,
+  gamepad: Gamepad2,
+  aperture: Aperture,
+  code: SquareTerminal,
 };
 export type IconName = keyof typeof icons;
 export function Icon({
@@ -151,7 +161,15 @@ export function ServiceIcon({
             ? "okko"
             : name === "иви"
               ? "ivi"
-              : null;
+              : name.startsWith("discord")
+                ? "discord"
+                : name.startsWith("chatgpt")
+                  ? "chatgpt"
+                  : name.startsWith("github copilot")
+                    ? "github"
+                    : name.startsWith("notion")
+                      ? "notion"
+                      : null;
   const brandColors = {
     spotify: "#1db954",
     telegram: "#2aabee",
@@ -159,6 +177,10 @@ export function ServiceIcon({
     start: "#e52b44",
     okko: "#7041df",
     ivi: "#e72e68",
+    discord: "#5865f2",
+    chatgpt: "#10a37f",
+    github: "#293345",
+    notion: "#22252d",
   };
   return (
     <span
@@ -193,6 +215,12 @@ export function ServiceIcon({
             d="M20.9 3.6 17.7 20c-.2 1.1-.9 1.4-1.8.8l-4.8-3.5-2.4 2.3c-.3.3-.5.5-1 .5l.4-5L17.3 6c.4-.4-.1-.6-.6-.3L5.3 12.9.6 11.4c-1-.3-1.1-1 .2-1.5L19 2.9c.9-.3 1.7.2 1.9.7Z"
           />
         </svg>
+      ) : brand === "discord" ? (
+        <Icon name="gamepad" size={small ? 20 : 26} />
+      ) : brand === "chatgpt" ? (
+        <Icon name="aperture" size={small ? 22 : 29} />
+      ) : brand === "github" ? (
+        <Icon name="code" size={small ? 21 : 27} />
       ) : brand ? (
         <span className={`brand-wordmark brand-${brand}`}>
           {
@@ -202,6 +230,7 @@ export function ServiceIcon({
                 start: "START",
                 okko: "okko",
                 ivi: "иви",
+                notion: "N",
               } as Record<string, string>
             )[brand]
           }
@@ -314,6 +343,7 @@ export function SubscriptionCard({
   pay: () => void;
 }) {
   const days = daysUntil(sub.nextPayment, today);
+  const money = useMoney();
   return (
     <article
       className={`subscription-card ${sub.status === "paused" ? "is-paused" : ""}`}
@@ -358,7 +388,7 @@ export function SubscriptionCard({
           aria-label={`Условия примерной цены ${sub.name}`}
         >
           <Icon name="info" size={12} />
-          Пример цены в ₽
+          Пример цены
         </button>
       ) : (
         <span className="price-source manual">Указана вручную</span>
@@ -419,6 +449,7 @@ export function UpcomingItem({
   onClick: () => void;
 }) {
   const value = date ?? sub.nextPayment;
+  const money = useMoney();
   return (
     <button className="upcoming-item" onClick={onClick}>
       <ServiceIcon subscription={sub} small />
